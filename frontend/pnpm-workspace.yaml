@@ -1,0 +1,6 @@
+# pnpm 11+ reads settings (overrides, etc.) from here, not package.json's "pnpm" field.
+overrides:
+  # undici < 7.28.0 has advisories (TLS bypass, DoS, header injection, …). It's only
+  # a transitive dev dependency (jsdom -> vitest), but pin the patched line to keep
+  # the Dependabot alerts closed.
+  undici: '^7.28.0'

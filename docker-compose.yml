@@ -1,0 +1,74 @@
+# IPTV Play — containerized for a Linux home server (e.g. Ubuntu).
+#
+# The backend JOINS multicast UDP groups on the LAN, which Docker's bridge
+# network does not forward — so both services run with `network_mode: host`.
+# The host itself must sit on the IPTV multicast network. (Host networking is a
+# Linux feature; on Docker Desktop for macOS/Windows it has no effect, so use a
+# real Linux host.)
+#
+# HOST PREREQ (smooth multicast): raise the UDP receive-buffer cap so ffmpeg's
+# 8 MB request (buffer_size in main.go) isn't clamped to the ~208 KB default —
+# clamping drops multicast bursts and corrupts the video. On the host, once:
+#   sudo sysctl -w net.core.rmem_max=33554432   (persist in /etc/sysctl.d/)
+# It can't be set from the container under host networking. See README.
+#
+# Ports (exposed on the LAN via host networking):
+#   - web UI (nginx)   : 10034   ->  open http://<server-ip>:10034
+#   - backend (bridge) : 10033   ->  channel list + EPG + HLS + /proxy
+# nginx also reverse-proxies the backend at /bridge (same-origin), so the SPA
+# needs no backend URL; the backend is reachable directly on :10033 too.
+services:
+  backend:
+    build: ./backend
+    image: iptv-play-backend
+    container_name: iptv-bridge
+    restart: unless-stopped
+    # Backstop so a runaway ffmpeg can never OOM the host (or ollama): cap RAM and
+    # disable swap for the container. Docker OOM-kills + restarts just this service.
+    mem_limit: 8g
+    memswap_limit: 8g
+    # Cap the json-log so ffmpeg's per-frame warnings can't fill the disk over time.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    network_mode: host            # LAN multicast reception (Linux host)
+    expose:
+      - "10033"                   # informational only (host networking ignores expose/ports)
+    command:
+      - "-addr"
+      - ":10033"                  # all interfaces — reachable on the LAN and via the nginx /bridge proxy
+      - "-vaapi"                  # hardware-transcode HEVC/MPEG-2 channels to H.264 on the iGPU
+      - "/dev/dri/renderD128"     # (H.264 channels still stream-copy). Remove these 2 lines if no iGPU.
+      # - "-iface"                # pin the NIC that receives multicast, if the default route is wrong
+      # - "0.0.0.0"
+    # Your UDP playlist + EPG come from .env (IPTV_M3U / IPTV_EPG) — see .env.example.
+    # Leave .env empty for proxy-only (the app then uses iptv-org country lists).
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:10033/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    devices:
+      - "/dev/dri:/dev/dri"       # Intel/AMD iGPU for the VAAPI transcode (remove if no iGPU)
+    group_add:
+      # The render node /dev/dri/renderD128 is owned by the host "render" group;
+      # the container user must join it to reach the iGPU. Find your host's GID with
+      #   getent group render | cut -d: -f3
+      # then set RENDER_GID in .env. The 110 default matches a typical Ubuntu host.
+      - "${RENDER_GID:-110}"
+
+  frontend:
+    build: ./frontend
+    image: iptv-play-frontend
+    container_name: iptv-web
+    restart: unless-stopped
+    network_mode: host            # nginx serves :10034 and reaches the backend on 127.0.0.1:10033
+    expose:
+      - "10034"                   # informational only (host networking ignores expose/ports)
+    depends_on:
+      backend:
+        condition: service_healthy

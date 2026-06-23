@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output
+dist
+dist-ssr
+*.local
+
+# Environment (local backend playlist/EPG config; .env.example is committed)
+.env
+!.env.example
+
+# Test / coverage
+coverage
+
+# Backend (Go)
+backend/iptv-bridge
+backend/*.exe
+
+# go2rtc gateway binary (downloaded by scripts/get-go2rtc.sh)
+bin/
+
+# Editor / OS
+.DS_Store
+*.log
+logs
+.vscode/*
+!.vscode/extensions.json
+.idea
+.gstack/
+.superpowers/
+
+# Local AI assistant tooling (not part of the project)
+CLAUDE.md
+AGENTS.md
+.claude/
+docs/superpowers/

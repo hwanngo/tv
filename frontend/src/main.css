@@ -1,0 +1,404 @@
+@import 'tailwindcss';
+
+/* Dark mode keyed off [data-theme="dark"] (matches the v3 selector strategy). */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* ── Tailwind theme (CSS-first config) ─────────────────────────────────── */
+@theme {
+  --font-sans:
+    'DM Sans', 'Be Vietnam Pro', ui-sans-serif, system-ui, -apple-system, Arial, sans-serif;
+  --font-serif: 'Lora', Georgia, ui-serif, serif;
+  --font-mono:
+    'DM Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+
+  /* Brand palette — generates bg-/text-/border-/ring-brand-* utilities.
+     A single fixed warm palette; opacity modifiers like bg-brand-accent/10
+     keep working via color-mix. */
+  --color-brand-surface: #f5f4ed;
+  --color-brand-card: #faf9f5;
+  --color-brand-ink: #141413;
+  --color-brand-inkSoft: #30302e;
+  --color-brand-accent: #b5512f;
+  --color-brand-accentSoft: #d97757;
+  --color-brand-muted: #5e5d59;
+  --color-brand-faint: #87867f;
+  --color-brand-silver: #b0aea5;
+  --color-brand-sand: #e8e6dc;
+  --color-brand-border: #f0eee6;
+  --color-brand-borderMid: #e8e6dc;
+  --color-brand-borderDark: #30302e;
+  --color-brand-charcoal: #4d4c48;
+  --color-brand-charcoalSoft: #3d3d3a;
+  --color-brand-ring: #d1cfc5;
+}
+
+/* ── Semantic theme variables ─────────────────────────────────────────────
+   IPTV Play ships a single fixed dark theme. These vars were previously
+   provided by the design system (design-anthropic.css :root + dark); now that
+   the multi-design system is gone they live here. Consumed by the base layer
+   (body fg/bg), the Drawer, scrollbars, focus rings, range inputs, .btn. */
+:root {
+  --bg: #f5f4ed;
+  --bg-card: #faf9f5;
+  --bg-card2: #ffffff;
+  --bg-hover: #f0eee6;
+  --fg: #141413;
+  --fg-2: #5e5d59;
+  --fg-3: #6e6d67;
+  --fg-btn: #4d4c48;
+  --accent: #fe592a;
+  --accent-hover: #e44a1f;
+  --accent-strong: #c2410c; /* darker orange for filled buttons/badges with white text (AA >= 4.5:1) */
+  --accent-fg: #ffffff;
+  --accent-text: #fe592a;
+  --coral: #d97757;
+  --error: #b53333;
+  --error-hover: #9e2b2b;
+  --error-fg: #ffffff;
+  --focus: #fe592a;
+  --border: #f0eee6;
+  --border-mid: #e8e6dc;
+  --ring: #d1cfc5;
+  --tag-bg: #ede9df;
+  --tag-fg: #5e5d59;
+  --btn-neutral-bg: #e8e6dc;
+  --btn-neutral-hover: #d1cfc5;
+  --btn-neutral-fg: #4d4c48;
+  --btn-neutral-ring: #d1cfc5;
+  --btn-dark-bg: #30302e;
+  --btn-dark-hover: #3d3d3a;
+  --btn-dark-fg: #faf9f5;
+  --btn-dark-ring: #4d4c48;
+  --radius-btn: 10px;
+  --radius-card: 12px;
+  --radius-field: 8px;
+  --press-scale: 0.97;
+  --tracking-body: 0em;
+  --shadow-whisper: rgba(0, 0, 0, 0.05) 0px 4px 24px;
+  --shadow-ring: 0px 0px 0px 1px #d1cfc5;
+  --shadow-float: rgba(0, 0, 0, 0.12) 0px 6px 20px;
+}
+
+/* Fixed dark theme (RootLayout always sets data-theme="dark"). Values mirror the
+   IPTV palette used inline across the app so var-driven UI (Drawer, scrollbars)
+   stays consistent. */
+[data-theme='dark'] {
+  --bg: #0d0d0c;
+  --bg-card: #141417;
+  --bg-card2: #1c1c22;
+  --bg-hover: #1d1d22;
+  --fg: #f4f4f5;
+  --fg-2: #b5b5ba;
+  --fg-3: #9a9a9f;
+  --fg-btn: #b5b5ba;
+  --accent: #fe592a;
+  --accent-hover: #e44a1f;
+  --accent-strong: #c2410c; /* darker orange for filled buttons/badges with white text (AA >= 4.5:1) */
+  --accent-fg: #ffffff;
+  --accent-text: #fe7a52;
+  --coral: #d97757;
+  --error: #cb7070;
+  --error-hover: #9e2b2b;
+  --error-fg: #291616;
+  --focus: #fe592a;
+  --border: #23232a;
+  --border-mid: #2c2c33;
+  --ring: #33333a;
+  --tag-bg: #2a2a27;
+  --tag-fg: #b5b5ba;
+  --btn-neutral-bg: #1d1d22;
+  --btn-neutral-hover: #2a2a31;
+  --btn-neutral-fg: #e6e6e8;
+  --btn-neutral-ring: #33333a;
+  --btn-dark-bg: #1c1c22;
+  --btn-dark-hover: #26262d;
+  --btn-dark-fg: #f4f4f5;
+  --btn-dark-ring: #33333a;
+  --shadow-whisper: rgba(0, 0, 0, 0.3) 0px 4px 24px;
+  --shadow-ring: 0px 0px 0px 1px #33333a;
+  --shadow-float: rgba(0, 0, 0, 0.5) 0px 6px 20px;
+}
+
+/* ── Base reset ─────────────────────────────────────────────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 16px;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    letter-spacing: var(--tracking-body, 0em);
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    line-height: 1.6;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    transition:
+      background 0.25s ease,
+      color 0.25s ease;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  img {
+    @apply inline-block;
+  }
+
+  a.link {
+    @apply underline;
+    color: var(--fg-2);
+  }
+  a.link:hover {
+    color: var(--fg);
+  }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--ring);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--fg-2);
+  }
+
+  @media screen and (max-width: 768px) {
+    ::-webkit-scrollbar {
+      display: none;
+      scrollbar-width: none;
+    }
+  }
+
+  .hide-scroll-bar::-webkit-scrollbar {
+    display: none;
+    scrollbar-width: none;
+  }
+
+  /* Selection */
+  ::selection {
+    background: var(--accent);
+    color: #faf9f5;
+  }
+
+  /* Focus */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* Range inputs */
+  input[type='range'] {
+    -webkit-appearance: none;
+    appearance: none;
+    accent-color: var(--accent);
+  }
+  input[type='range']::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 9999px;
+    background: var(--border-mid);
+  }
+  input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 9999px;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg-card);
+    box-shadow: 0 0 0 1.5px var(--accent);
+    margin-top: -5px;
+  }
+
+  textarea:focus {
+    outline: none;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
+
+/* ── Button components ──────────────────────────────────────────────────── */
+@layer components {
+  .btn {
+    align-items: center;
+    border-color: transparent;
+    border-radius: var(--radius-btn);
+    border-width: 1px;
+    display: inline-flex;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    padding: 8px 16px;
+    pointer-events: auto;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition:
+      background-color 150ms,
+      border-color 150ms,
+      box-shadow 150ms,
+      transform 120ms;
+    outline: none;
+  }
+
+  .btn:active {
+    transform: scale(var(--press-scale));
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* Primary — design accent */
+  .btn-primary {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-fg);
+    box-shadow:
+      var(--accent) 0px 0px 0px 0px,
+      var(--accent) 0px 0px 0px 1px;
+  }
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+
+  /* Neutral */
+  .btn-neutral {
+    background-color: var(--btn-neutral-bg);
+    border-color: var(--btn-neutral-bg);
+    color: var(--btn-neutral-fg);
+    box-shadow:
+      var(--btn-neutral-bg) 0px 0px 0px 0px,
+      var(--btn-neutral-ring) 0px 0px 0px 1px;
+  }
+  .btn-neutral:hover {
+    background-color: var(--btn-neutral-hover);
+    border-color: var(--btn-neutral-hover);
+  }
+
+  /* Dark */
+  .btn-dark {
+    background-color: var(--btn-dark-bg);
+    border-color: var(--btn-dark-bg);
+    color: var(--btn-dark-fg);
+    box-shadow:
+      var(--btn-dark-bg) 0px 0px 0px 0px,
+      var(--btn-dark-ring) 0px 0px 0px 1px;
+  }
+  .btn-dark:hover {
+    background-color: var(--btn-dark-hover);
+  }
+
+  /* Size modifier */
+  .btn-small {
+    padding: 5px 12px;
+    font-size: 0.75rem;
+  }
+
+  /* Shape modifier — pill (shared across all designs, color-agnostic) */
+  .btn-pill {
+    border-radius: 9999px;
+  }
+
+  /* Layout modifier — full width */
+  .btn-block {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── IPTV Play (fixed dark scope) ─────────────────────────────────────── */
+[data-app='iptv'],
+[data-app='iptv'] body {
+  font-family: 'Be Vietnam Pro', 'Roboto', system-ui, sans-serif;
+}
+/* IPTV is an all-sans UI — neutralise the design-system serif (Lora) in this scope. */
+[data-app='iptv'] .font-serif {
+  font-family: inherit;
+}
+/* Header action buttons: borderless, with a subtle hover/press affordance. */
+[data-app='iptv'] .hbtn {
+  border-radius: 9999px;
+  transition: background-color 0.15s ease;
+}
+[data-app='iptv'] .hbtn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+[data-app='iptv'] .hbtn:active {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+[data-app='iptv'] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+[data-app='iptv'] ::-webkit-scrollbar-thumb {
+  background: #33333a;
+  border-radius: 8px;
+}
+@keyframes eq {
+  0%,
+  100% {
+    height: 30%;
+  }
+  50% {
+    height: 100%;
+  }
+}
+@keyframes lp {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* ── IPTV Play — input-modality & motion ─────────────────────────────── */
+[data-app='iptv'] :focus-visible {
+  outline: 2px solid #fe592a;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+@media (hover: none) and (pointer: coarse) {
+  [data-app='iptv'] button,
+  [data-app='iptv'] [role='button'] {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-app='iptv'] *,
+  [data-app='iptv'] *::before,
+  [data-app='iptv'] *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
